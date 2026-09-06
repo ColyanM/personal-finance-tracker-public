@@ -1,0 +1,16 @@
+[
+  {
+    "base_currency": "USD",
+    "quote_currency": "NZD",
+    "rate": "1.65",
+    "rate_date": "2026-06-07",
+    "source": "manual_seed"
+  },
+  {
+    "base_currency": "NZD",
+    "quote_currency": "USD",
+    "rate": "0.6060606061",
+    "rate_date": "2026-06-07",
+    "source": "manual_seed"
+  }
+]

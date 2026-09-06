@@ -1,0 +1,63 @@
+[
+  {"name": "Primary paycheck", "group_name": "Income", "type": "income"},
+  {"name": "Secondary paycheck", "group_name": "Income", "type": "income"},
+  {"name": "Other income", "group_name": "Income", "type": "income"},
+
+  {"name": "Rent", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Internet", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Mobile phone", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Electric", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Home gas", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Car insurance", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Contents insurance", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Subscriptions", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Rego and WOF", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Mortgage", "group_name": "Fixed Expenses", "type": "expense"},
+  {"name": "Water", "group_name": "Fixed Expenses", "type": "expense"},
+
+  {"name": "Student loans", "group_name": "Debts", "type": "expense"},
+  {"name": "Car loan", "group_name": "Debts", "type": "expense"},
+
+  {"name": "General", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Groceries", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Eating out", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Petrol", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Personal spending", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Public transport", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Parking", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Hobbies", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Auto maintenance", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Auto repairs", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Gym membership", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Gifts", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Home", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Household supplies", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Clothing", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Haircuts", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Doctor", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Auto incident", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Moving expenses", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Telecommunications", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Household services", "group_name": "Variable Expenses", "type": "expense"},
+  {"name": "Recreation", "group_name": "Variable Expenses", "type": "expense"},
+
+  {"name": "Pet food", "group_name": "Pets", "type": "expense"},
+  {"name": "Veterinary", "group_name": "Pets", "type": "expense"},
+  {"name": "Pet grooming", "group_name": "Pets", "type": "expense"},
+  {"name": "Pet supplies", "group_name": "Pets", "type": "expense"},
+  {"name": "Other pet expenses", "group_name": "Pets", "type": "expense"},
+
+  {"name": "Excursions", "group_name": "Travel", "type": "expense"},
+  {"name": "Hotels", "group_name": "Travel", "type": "expense"},
+  {"name": "Flights", "group_name": "Travel", "type": "expense"},
+  {"name": "Vacation food", "group_name": "Travel", "type": "expense"},
+  {"name": "Vacation transportation", "group_name": "Travel", "type": "expense"},
+
+  {"name": "Account transfer", "group_name": "Transfers", "type": "transfer"},
+  {"name": "Credit card payment", "group_name": "Transfers", "type": "transfer"},
+  {"name": "Reimbursement", "group_name": "Transfers", "type": "transfer"},
+
+  {"name": "Investment contributions", "group_name": "Investments", "type": "expense"},
+
+  {"name": "Uncategorized", "group_name": "Holding Categories", "type": "expense"}
+]

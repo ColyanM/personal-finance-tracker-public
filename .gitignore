@@ -1,0 +1,38 @@
+# Local secrets
+.env
+.env.*
+*.local.*
+config.local.*
+*.key
+*.pem
+*.p12
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# React build output
+frontend/node_modules/
+frontend/dist/
+
+# VS Code and Windows
+.vscode/
+Thumbs.db
+.DS_Store
+
+# Generated database, imports, exports, and raw bank data
+data/*
+*.csv
+*.db
+*.db-*
+*.sqlite
+*.sqlite-*
+*.sqlite3
+*.sqlite3-*
+*.log
+
+# Keep the example exchange rates in Git
+!data/fx_rates_seed.json
+!data/categories_seed.json
