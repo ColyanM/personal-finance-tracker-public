@@ -1,6 +1,10 @@
 import ast
+import fnmatch
 import os
+import re
+import subprocess
 import sys
+from pathlib import Path, PurePosixPath
 
 try:
     from scripts.bank_permissions import validate_read_only_permissions
@@ -24,8 +28,39 @@ except ModuleNotFoundError:
 
 REQUIRED_IGNORE_RULES = {".env", ".env.*", "*.key", "*.pem", "*.p12", "data/*"}
 SECRET_WORDS = {"KEY", "PASSWORD", "SECRET", "TOKEN"}
-SOURCE_SUFFIXES = {".py", ".md", ".json", ".csv", ".txt", ".yml", ".yaml", ".toml"}
-SKIP_FOLDERS = {".git", ".venv", "__pycache__"}
+SOURCE_SUFFIXES = {
+    ".py", ".md", ".json", ".csv", ".txt", ".yml", ".yaml", ".toml",
+    ".js", ".jsx", ".ts", ".tsx", ".html", ".env", ".ini", ".cfg",
+    ".conf", ".ps1", ".sh", ".cmd", ".bat", ".xml",
+}
+SKIP_FOLDERS = {
+    ".git", ".venv", "venv", "__pycache__", "node_modules", ".pytest_cache",
+    ".mypy_cache", ".ruff_cache", ".vite", "coverage", "htmlcov",
+}
+PRIVATE_FILE_PATTERNS = {
+    ".env", ".env.*", "*.local.*", "config.local.*", "*.key", "*.pem",
+    "*.p12", "*.pfx", "*.kdbx", ".npmrc", ".pypirc", "*.csv", "*.tsv",
+    "*.ofx", "*.qfx", "*.qif", "*.xls", "*.xlsx", "*.pdf", "*.db",
+    "*.db-*", "*.sqlite", "*.sqlite-*", "*.sqlite3", "*.sqlite3-*",
+    "*.log", "*.bak", "*.backup", "*.dump", "tailscale_access.json",
+    "finance_hub_*.cmd",
+}
+PRIVATE_FOLDERS = {
+    "secrets", "backups", "exports", "imports", "raw_data", "financehub",
+    ".finance_hub", ".agents", ".codex",
+}
+# Deliberately recognize credential formats, not generic words such as "secret".
+# Findings contain only a rule name and path, never the matched credential.
+CREDENTIAL_PATTERNS = {
+    "Private key": re.compile(r"-----BEGIN (?:RSA |EC |DSA |OPENSSH |ENCRYPTED )?PRIVATE KEY-----"),
+    "Plaid access token": re.compile(r"\baccess-(?:production|development|sandbox)-[a-fA-F0-9]{8}(?:-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}\b"),
+    "Akahu token": re.compile(r"\b(?:app_token|user_token)_[A-Za-z0-9]{24,}\b"),
+    "GitHub token": re.compile(r"\b(?:gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,})\b"),
+    "AWS access key": re.compile(r"\b(?:AKIA|ASIA)[A-Z0-9]{16}\b"),
+    "OpenAI key": re.compile(r"\bsk-(?:proj-|svcacct-)?[A-Za-z0-9_-]{32,}\b"),
+    "Slack token": re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{24,}\b"),
+    "Windows encrypted secret": re.compile(r"\b01000000d08c9ddf0115d1118c7a00c04fc297eb[0-9a-fA-F]{80,}\b", re.IGNORECASE),
+}
 REQUIRED_SECURITY_HEADERS = {
     "Cache-Control",
     "Content-Security-Policy",
@@ -204,15 +239,24 @@ def get_ignore_rules(gitignore_path):  #Reads active gitignore rules
 def get_source_files(project_root):  #Finds project text files that should never contain tokens
     source_files = []
 
-    for path in project_root.rglob("*"):
-        if not path.is_file() or path.suffix.lower() not in SOURCE_SUFFIXES:
-            continue
-
-        relative_parts = path.relative_to(project_root).parts
-        if any(part in SKIP_FOLDERS for part in relative_parts):
-            continue
-
-        source_files.append(path)
+    for folder, directories, filenames in os.walk(project_root, followlinks=False):
+        folder_path = Path(folder)
+        directories[:] = [
+            name for name in directories
+            if name.lower() not in SKIP_FOLDERS
+            and not (folder_path == project_root / "frontend" and name == "dist")
+        ]
+        for filename in filenames:
+            path = folder_path / filename
+            if path.is_symlink():
+                continue
+            if (
+                path.suffix.lower() in SOURCE_SUFFIXES
+                or filename == ".env"
+                or filename.startswith(".env.")
+                or filename in {".npmrc", ".pypirc"}
+            ):
+                source_files.append(path)
 
     return source_files
 
@@ -239,6 +283,63 @@ def find_token_leaks(project_root):  #Checks configured token values are not sav
                 leaks.append((variable_name, str(path.relative_to(project_root))))
 
     return leaks
+
+
+def find_hardcoded_credentials(project_root):
+    findings = []
+    for path in get_source_files(project_root):
+        source = path.read_text(encoding="utf-8", errors="ignore")
+        for rule_name, pattern in CREDENTIAL_PATTERNS.items():
+            if pattern.search(source):
+                findings.append((rule_name, str(path.relative_to(project_root))))
+    return findings
+
+
+def get_git_tracked_paths(project_root):
+    """Read the index, including force-added files. ZIP installs do not require Git."""
+    project_root = project_root.resolve()
+    command = ["git", "-c", f"safe.directory={project_root.as_posix()}"]
+    try:
+        top_level = subprocess.run(
+            [*command, "rev-parse", "--show-toplevel"], cwd=project_root,
+            capture_output=True, text=True, check=False, timeout=10,
+        )
+        if top_level.returncode or Path(top_level.stdout.strip()).resolve() != project_root:
+            return None
+        result = subprocess.run(
+            [*command, "ls-files", "-z"], cwd=project_root,
+            capture_output=True, check=False, timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode:
+        raise OSError("Could not inspect the Git index for private files")
+    return [name.decode("utf-8", errors="replace") for name in result.stdout.split(b"\0") if name]
+
+
+def private_path_is_unsafe(relative_path):
+    path = PurePosixPath(relative_path.replace("\\", "/").lower())
+    if len(path.parts) == 2 and path.parts[0] == "data" and path.name in SEED_FILES:
+        return False
+    return (
+        "data" in path.parts[:-1]
+        or any(part in PRIVATE_FOLDERS | SKIP_FOLDERS for part in path.parts[:-1])
+        or path.parts[:2] == ("frontend", "dist")
+        or any(fnmatch.fnmatchcase(path.name, pattern) for pattern in PRIVATE_FILE_PATTERNS)
+    )
+
+
+def get_tracked_private_file_check(project_root):
+    tracked_paths = get_git_tracked_paths(project_root)
+    if tracked_paths is None:
+        return True, "Skipped: Git index unavailable (for example, a ZIP install)"
+    private_paths = [path for path in tracked_paths if private_path_is_unsafe(path)]
+    if private_paths:
+        return False, (
+            f"Remove {len(private_paths)} private or generated file(s) from the Git index: "
+            + ", ".join(repr(path) for path in sorted(private_paths))
+        )
+    return True, "No private or generated files tracked by Git"
 
 
 def get_bank_permissions():  #Reads future bank permissions without needing an API connection
@@ -291,6 +392,8 @@ def run_checks(project_root=PROJECT_ROOT):  #Runs each security baseline check
     ignore_rules = get_ignore_rules(project_root / ".gitignore")
     missing_rules = sorted(REQUIRED_IGNORE_RULES - ignore_rules)
     token_leaks = find_token_leaks(project_root)
+    hardcoded_credentials = find_hardcoded_credentials(project_root)
+    tracked_files_are_safe, tracked_file_details = get_tracked_private_file_check(project_root)
     bank_permissions = get_bank_permissions()
     permissions_are_safe, permission_details = get_permission_check(bank_permissions)
     plaid_mode_is_safe, plaid_mode_details = get_plaid_connection_mode_check()
@@ -331,7 +434,9 @@ def run_checks(project_root=PROJECT_ROOT):  #Runs each security baseline check
             not token_leaks,
             "No configured token values found"
             if not token_leaks
-            else f"Found token values in {len(token_leaks)} file(s)",
+            else "Configured token values found: " + "; ".join(
+                f"{variable_name} in {path!r}" for variable_name, path in sorted(token_leaks)
+            ),
         ),
         (
             "Bank tokens outside environment",
@@ -339,6 +444,20 @@ def run_checks(project_root=PROJECT_ROOT):  #Runs each security baseline check
             "No bank tokens found in environment variables"
             if not environment_tokens
             else f"Remove: {', '.join(environment_tokens)}",
+        ),
+        (
+            "Recognizable credentials kept out of project files",
+            not hardcoded_credentials,
+            "No recognized credential formats found"
+            if not hardcoded_credentials
+            else "Remove recognized credentials: " + "; ".join(
+                f"{rule_name} in {path!r}" for rule_name, path in sorted(hardcoded_credentials)
+            ),
+        ),
+        (
+            "Private files kept out of Git",
+            tracked_files_are_safe,
+            tracked_file_details,
         ),
         (
             "Read-only bank permissions",

@@ -1685,8 +1685,9 @@ function Goals({ currency }) {
 
   async function saveGoal(event) {
     event.preventDefault();
-    await apiPost("/api/goals/save", Object.fromEntries(new FormData(event.currentTarget).entries()));
-    event.currentTarget.reset();
+    const formElement = event.currentTarget;
+    await apiPost("/api/goals/save", Object.fromEntries(new FormData(formElement).entries()));
+    formElement.reset();
     saveScroll();
     setReload((value) => value + 1);
   }
@@ -1728,8 +1729,9 @@ function Investments({ currency }) {
 
   async function savePosition(event) {
     event.preventDefault();
-    await apiPost("/api/investments/position", Object.fromEntries(new FormData(event.currentTarget).entries()));
-    event.currentTarget.reset();
+    const formElement = event.currentTarget;
+    await apiPost("/api/investments/position", Object.fromEntries(new FormData(formElement).entries()));
+    formElement.reset();
     saveScroll();
     setReload((value) => value + 1);
   }
@@ -1795,8 +1797,9 @@ function Rules() {
 
   async function addRule(event) {
     event.preventDefault();
-    await apiPost("/api/rules/add", Object.fromEntries(new FormData(event.currentTarget).entries()));
-    event.currentTarget.reset();
+    const formElement = event.currentTarget;
+    await apiPost("/api/rules/add", Object.fromEntries(new FormData(formElement).entries()));
+    formElement.reset();
     saveScroll();
     setReload((value) => value + 1);
   }

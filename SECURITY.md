@@ -31,7 +31,7 @@ issue, discussion, pull request, commit, screenshot, or log. This includes:
 - Bank, card, investment, or loan statements and transaction exports.
 - Account, transaction, customer, institution, or Plaid Item identifiers.
 - API keys, access tokens, passwords, authorization headers, or recovery codes.
-- Email addresses, Tailscale hostnames or logins, private URLs, or personal
+- Email addresses, private hostnames or logins, private URLs, or personal
   names.
 - SQLite databases, backups, application-data folders, configuration files, or
   logs produced while using real accounts.

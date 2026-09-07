@@ -1,10 +1,9 @@
 # Finance Hub
 
-> **Public repository note:** This is a sanitized public copy of a private
-> personal-finance project I developed over several months through more than
-> one hundred commits. The original repository and its full history remain
-> private. This public repository starts with a fresh Git history and contains
-> only reviewed, generalized source code and synthetic example data.
+> **Public version:** This is the public version of my finance tracker. My full
+> work and development history are in a private repo with hundreds of commits.
+> This copy starts with a fresh Git history and contains generalized source code
+> and synthetic example data.
 
 Finance Hub is a local, single-user personal finance tracker for NZD and USD
 accounts. It runs on Windows at `http://127.0.0.1:8000` and keeps private
@@ -12,108 +11,92 @@ finance data outside the Git repository in `%LOCALAPPDATA%\FinanceHub`.
 
 The app includes:
 
-- A dashboard with net worth, monthly income and spending, budget progress,
-  recurring items, recent transactions, and bank refresh status.
-- Manual, CSV-imported, Akahu, and Plaid accounts.
-- Transaction review, category assignment, split transactions, and reusable
-  category rules.
-- Monthly budgets with planned dollars, planned percentages,
-  rollover controls, group totals, and smooth in-place saving.
-- Cash-flow and report views with donut, bar, combination, and net-worth
-  charts.
-- Timeline choices for this month, 3 months, 6 months, 1 year, 3 years,
-  5 years, and all available history.
-- Recurring forecasts, savings goals, investment holdings, sync diagnostics,
-  backups, and optional daily email alerts.
-- Responsive desktop, tablet, and phone layouts, including mobile navigation
-  and scrollable data views where a table or chart needs more width.
+- Account balances and net worth.
+- Transaction imports, category assignment, splits, and category rules.
+- Monthly budgets, cash-flow reports, and spending charts.
+- Recurring forecasts, savings goals, and investment holdings.
+- Optional bank connections and daily email alerts.
 
-## Privacy and safety model
+You can start without linking a bank. Setup uses a few commands, and adding
+manual accounts, importing files, and making backups still use Command Prompt.
+Most day-to-day review happens in the browser. No code changes are needed.
 
-All committed seed data and test fixtures in this public edition are generalized
-or synthetic. Never commit real bank data, credentials, raw exports, account
-identifiers, email addresses, API tokens, or generated local data.
+## Contents
 
-By default, private files are stored in:
+- [First-time setup](#first-time-setup)
+- [Add an account and import transactions](#add-an-account-and-import-transactions)
+- [Using the app](#using-the-app)
+- [Starting and stopping the app](#starting-and-stopping-the-app)
+- [Backups](#backups)
+- [Other import formats](#other-import-formats)
+- [Optional bank connections](#optional-bank-connections)
+- [Daily transaction alerts](#daily-transaction-alerts)
+- [Choose a private data folder](#choose-a-private-data-folder)
+- [Customize branding](#customize-branding) and [starter data](#customize-seed-data)
+- [Updating or developing the app](#updating-or-developing-the-app)
+- [Checks and tests](#checks-and-tests)
+- [Troubleshooting](#troubleshooting)
+- [Privacy](#privacy) and [security notes](#security-notes)
 
-```text
-%LOCALAPPDATA%\FinanceHub
-```
+## First-time setup
 
-That folder holds the SQLite database and, when created, backups, exports,
-scheduled-task helpers, optional Tailscale access settings, and encrypted local
-secrets. Bank tokens and email passwords use Windows user-profile encryption.
-The web server always binds only to `127.0.0.1`, so it is not exposed to the
-local network. Optional phone access uses a private Tailscale Serve proxy and
-an exact Tailscale user allowlist; it never changes the app to a public server.
+Finance Hub is built for Windows 10 or 11. Use a browser such as Edge, Chrome,
+or Firefox. You need internet access to install it; saved data and manual
+imports can be used offline afterward.
 
-The source repository may be inside OneDrive. Private data should stay outside
-the repository and outside OneDrive. Advanced users can set
-`FINANCE_HUB_DATA_DIR` before running the app to choose another private folder,
-but the folder must not be inside this project or a OneDrive path.
+### 1. Install the required programs
 
-## 1. Install the required programs
+Use the official installers:
 
-Finance Hub is built for Windows 10 or 11. Use a current browser such as
-Microsoft Edge, Chrome, or Firefox.
+- [Python for Windows](https://www.python.org/downloads/windows/): Python 3.14.
+  This runs the app. Keep the Python launcher/install manager enabled, and
+  select **Add python.exe to PATH** if the installer offers it.
+- [Node.js](https://nodejs.org/en/download/): version 24 **LTS**.
+  This prepares the browser pages and includes `npm`.
+- [Git for Windows](https://git-scm.com/install/windows): this downloads the
+  project and lets you update it later.
 
-Recommended versions for a new installation:
+Open the Windows Start menu, type **Command Prompt**, and open it. If it was
+already open during installation, close and reopen it.
 
-- Git for Windows: current maintained release.
-- Python 3.14. The code supports Python 3.11 through 3.14.
-- Node.js 24 LTS or another supported LTS release at Node 22.12 or newer.
-
-The locked Vite toolchain declares Node `^20.19.0 || >=22.12.0`. Node 20 now
-being end-of-life, new installations should use a current Node LTS release,
-not Node 20.
-
-### Install with winget
-
-Open **Command Prompt** and run:
+Run these lines one at a time. Paste a line and press Enter:
 
 ```cmd
-winget --version
-winget install --id Git.Git -e --source winget
-winget install --id Python.Python.3.14 -e --source winget
-winget install --id OpenJS.NodeJS.LTS -e --source winget
-```
-
-If `winget` is unavailable, use the official download pages:
-
-- [Git for Windows](https://git-scm.com/install/windows)
-- [Python downloads for Windows](https://www.python.org/downloads/windows/)
-- [Node.js downloads](https://nodejs.org/en/download)
-
-When installing Python manually, make sure the Python launcher is available.
-Node.js includes `npm`.
-
-Close and reopen Command Prompt after installing, then verify the tools:
-
-```cmd
-git --version
 py -3 --version
 node --version
 npm --version
+git --version
 ```
 
-If `py -3 --version` fails but `python --version` works, replace `py -3` with
-`python` when creating the virtual environment below.
+Each should print a version number. If a program is "not recognized", check
+that it installed and reopen Command Prompt before continuing.
 
-## 2. Clone the repository
+If `py -3` fails but `python --version` shows Python 3.14, replace `py -3`
+with `python` in step 3.
 
-In Command Prompt, move to the folder where the source code should live and
-run:
+### 2. Download the project
+
+In the same Command Prompt:
 
 ```cmd
+cd /d "%USERPROFILE%"
 git clone https://github.com/ColyanM/personal-finance-tracker-public.git
 cd personal-finance-tracker-public
 ```
 
-All remaining commands assume the current directory is the repository root.
+This puts the project in a folder called `personal-finance-tracker-public`
+inside your Windows user folder. The `cd` command changes the folder you are
+working in.
 
-## 3. Create the Python environment
+If you already have the project, skip the download. Open the folder containing
+`app.py` and `README.md` in File Explorer, click the address bar, type `cmd`,
+and press Enter. This opens Command Prompt in the right folder.
 
-Create and activate a repository-local virtual environment:
+All remaining commands in this README run from that folder unless a step says
+otherwise. In each new Command Prompt, activate the Python environment with
+`.venv\Scripts\activate.bat` before running Python commands.
+
+### 3. Set up Python
 
 ```cmd
 py -3 -m venv .venv
@@ -122,48 +105,13 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-The requirements file installs `tzdata`. It is required on Windows because the
-daily automation uses the `Pacific/Auckland` IANA timezone and Windows does not
-provide that database to Python's `zoneinfo` module. Installing it also allows
-the full test suite to be collected.
+This creates and activates a Python environment just for this app, then installs
+what it needs. The prompt should show `(.venv)` after activation.
 
-Keep this Command Prompt open. In each new Command Prompt, return to the repo
-and reactivate the environment before running Python commands:
+Keep this window open. Wait for each command to finish before running the next
+one. If a command fails, fix that step before continuing.
 
-```cmd
-cd personal-finance-tracker-public
-.venv\Scripts\activate.bat
-```
-
-PowerShell users can activate the same environment with:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-## 4. Review or customize the public defaults
-
-The public edition uses neutral interface branding, generalized starter
-categories and rules, and synthetic test fixtures. Review these files before
-creating the database if different defaults are wanted:
-
-```text
-frontend\src\main.jsx
-data\categories_seed.json
-scripts\category_rules.py
-scripts\bnz_csv_import.py
-scripts\monarch_import.py
-```
-
-The first file contains visible interface labels. The remaining files contain
-generalized starter categories, merchant rules, and import mappings. Details
-and limitations are in [Customize branding](#customize-branding) and
-[Customize seed data](#customize-seed-data).
-
-## 5. Create local app data
-
-Create or migrate the private SQLite database, install the offline FX fallback,
-and seed categories and category rules:
+### 4. Create the local database
 
 ```cmd
 python scripts\db_init.py
@@ -173,17 +121,19 @@ python scripts\category_rules.py seed
 python scripts\fx_refresh.py latest
 ```
 
-The first four commands work without bank credentials. The last command uses
-the public Frankfurter FX service. If the internet is unavailable, the app can
-continue with the saved fallback rate and refresh it later.
+These create the database, starter categories and rules, and exchange rates.
+They do not add any accounts or transactions. You can add categories in the app
+later.
 
-These commands create data under `%LOCALAPPDATA%\FinanceHub`, not in the Git
-repository.
+The last command gets exchange rates from the public Frankfurter service.
+If it fails because you are offline, setup can continue using the saved
+fallback rate. That rate may be out of date. Refresh it before importing real
+transactions or relying on converted totals: converted transaction amounts are
+saved at import time.
 
-## 6. Install and build the frontend
+Your data is saved in `%LOCALAPPDATA%\FinanceHub`, outside the project folder.
 
-The repository includes `frontend\package-lock.json`, so use `npm ci` for a
-repeatable install:
+### 5. Build the browser pages
 
 ```cmd
 cd frontend
@@ -192,409 +142,279 @@ npm run build
 cd ..
 ```
 
-The Python server serves the built files from `frontend\dist`. Running only
-the React source without building it will not update the normal app at port
-8000.
+This may take a few minutes. `npm ci` installs the components listed in the
+included lockfile, and `npm run build` prepares the pages the app serves.
+You only need to repeat this after updating or changing the app.
 
-## 7. Verify the installation
-
-Run the local safety checks, final readiness check, timezone check, and tests:
+### 6. Check the installation and start the app
 
 ```cmd
 python scripts\security_check.py
 python scripts\final_check.py
-python -c "from zoneinfo import ZoneInfo; print(ZoneInfo('Pacific/Auckland'))"
-python -m unittest discover -s tests
 ```
 
-The timezone command should print `Pacific/Auckland`. Fix any failed security
-or final checks before connecting bank providers.
-
-## 8. Start Finance Hub
-
-From the repository root, with the virtual environment activated, run:
+Both should finish with a passed message. Resolve any `FAIL` results before
+adding real data. Then run:
 
 ```cmd
 python app.py
 ```
 
-Then open:
+Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
+This address opens the app on your own computer.
 
-```text
-http://127.0.0.1:8000
-```
+Keep the Command Prompt window open while using the app. The dashboard will
+be empty until you add accounts and transactions.
 
-The app refreshes the public FX rate in the background when it starts and falls
-back to the last saved rate if the refresh fails. Stop the server with `Ctrl+C`.
+## Add an account and import transactions
 
-## Private phone access with Tailscale
+The Accounts page lets you view and rename accounts. Adding a manual account,
+changing its balance, and importing a file currently use commands.
 
-[Tailscale Serve](https://tailscale.com/docs/features/tailscale-serve) can make
-the loopback app available over private tailnet HTTPS without opening a router
-port or binding Finance Hub to the LAN. This is the supported remote-access
-model. Do not use Tailscale Funnel, port forwarding, or `HOST = "0.0.0.0"`.
-
-Remote access uses two independent checks:
-
-1. Tailscale admits a device to the private tailnet and adds its authenticated
-   `Tailscale-User-Login` header.
-2. Finance Hub permits only the exact configured `*.ts.net` hostname and login.
-   Remote writes must also have the exact HTTPS `Origin` or `Referer`.
-
-Tailscale Serve strips caller-supplied identity headers before adding its own.
-Funnel does not add those identity headers, so Finance Hub rejects accidental
-public requests. The backend must remain on `127.0.0.1` for that trust boundary
-to remain valid.
-
-### Install and enable private access
-
-1. [Install Tailscale on Windows](https://tailscale.com/docs/install/windows),
-   sign in, and install Tailscale on the phone using the same identity.
-2. Stop a manually running `python app.py` process before creating the startup
-   task below.
-3. Open **Terminal (Administrator)** in the repository. Tailscale requires an
-   elevated Windows terminal to configure Serve.
-4. Preview the exact URL, user, local target, and command:
+Open a second Command Prompt from the project folder while the app is running:
+open that folder in File Explorer, type `cmd` in the address bar, and press
+Enter. Activate the Python environment:
 
 ```cmd
-python scripts\tailscale_access.py plan
-```
-
-5. Enable persistent, private HTTPS Serve access:
-
-```cmd
-python scripts\tailscale_access.py enable --confirm ENABLE_PRIVATE_ACCESS
-```
-
-The first Serve setup may open a Tailscale consent page to enable tailnet HTTPS.
-The helper refuses to continue if it finds an active public Funnel listener. It
-saves only the non-secret URL and login under
-`%LOCALAPPDATA%\FinanceHub\tailscale_access.json`.
-
-6. Preview and install the current-user Windows logon task that starts Finance
-   Hub. It must run as this user, not `SYSTEM`, because bank and email secrets
-   are encrypted for the current Windows profile.
-
-```cmd
-python scripts\app_scheduler.py preview
-python scripts\app_scheduler.py install --confirm CREATE --start-now
-```
-
-7. Print the private URL and verify that Funnel is off:
-
-```cmd
-python scripts\tailscale_access.py status
-python scripts\app_scheduler.py status
-tailscale funnel status
-```
-
-Open the printed `https://<device>.<tailnet>.ts.net` address from the phone. The
-phone menu and narrow-screen layouts use the same relative `/api` routes, so no
-separate mobile build is needed.
-
-### Keep the laptop available with its lid closed
-
-Tailscale cannot wake a sleeping laptop. In Windows power settings, change only
-the **Plugged in** action for closing the lid to **Do nothing**. Leave the
-battery action as **Sleep**, keep the laptop plugged in, and place it somewhere
-ventilated rather than inside a bag. Windows can be locked; do not sign out.
-
-The app task starts at user logon and continues while that Windows session is
-locked. After a reboot, sign in once before expecting phone access. Background
-Tailscale Serve itself persists across reboots and Tailscale restarts because
-the helper uses `--bg`.
-
-### Check, stop, or remove phone access
-
-```cmd
-python scripts\tailscale_access.py status
-python scripts\app_scheduler.py status
-python scripts\app_scheduler.py stop
-python scripts\tailscale_access.py disable --confirm DISABLE_PRIVATE_ACCESS
-python scripts\app_scheduler.py remove --confirm REMOVE
-```
-
-The app log is retained outside Git at:
-
-```text
-%LOCALAPPDATA%\FinanceHub\finance_hub_web_app.log
-```
-
-If `tailscale funnel status` reports a public mapping, review whether it belongs
-to another service before using `tailscale funnel reset`; that reset affects all
-Funnel mappings on the laptop. Finance Hub's helper never enables Funnel and
-never resets unrelated Funnel configuration automatically.
-
-## Full first-time command list
-
-This is the complete command sequence when the default seed data is wanted:
-
-```cmd
-git clone https://github.com/ColyanM/personal-finance-tracker-public.git
-cd personal-finance-tracker-public
-py -3 -m venv .venv
 .venv\Scripts\activate.bat
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python scripts\db_init.py
-python scripts\fx_seed.py seed
-python scripts\categories.py seed
-python scripts\category_rules.py seed
-python scripts\fx_refresh.py latest
-cd frontend
-npm ci
-npm run build
-cd ..
-python scripts\security_check.py
-python scripts\final_check.py
-python -c "from zoneinfo import ZoneInfo; print(ZoneInfo('Pacific/Auckland'))"
-python -m unittest discover -s tests
-python app.py
 ```
 
-## First-use workflow
+Use this second window for the commands below.
 
-Bank connections are optional. A new user can begin with a manual account:
+### Add a manual account
+
+Replace the example name, bank, currency, and balance with your own:
 
 ```cmd
 python scripts\accounts.py add --name "Everyday" --institution "Example Bank" --account-type checking --balance-type asset --currency NZD --balance 1000.00
-python scripts\accounts.py list
 ```
 
-Use `--balance-type liability` for a credit card or loan balance. Amounts are
-entered in major units, so `1000.00` means one thousand dollars.
+- `--name` is an account nickname. You do not need to enter a bank account number.
+- `--currency` accepts `NZD` or `USD`.
+- `--balance` is in dollars, without a dollar sign or thousands separator.
+  `1000.00` means one thousand dollars.
+- `--account-type` describes the account: use `checking` for an everyday bank
+  account, `credit` for a credit card, `loan` for a loan, or `investment` for
+  an investment account.
+- Use `--balance-type asset` for money you own. For a credit card or loan,
+  use `--balance-type liability` and enter the amount owed as a positive number.
 
-A normal app session is:
+Reload the browser and open **Accounts** to see the account.
 
-1. Activate `.venv` and start the app with `python app.py`.
-2. Open `http://127.0.0.1:8000`.
-3. Use **Refresh all** to refresh configured providers. Providers that are not
-   fully configured are reported as skipped, so the button is also safe before
-   any bank is connected.
-4. Review new transactions and correct categories.
-5. Create or adjust rules for repeated merchants.
-6. Check Budget, Cash Flow, Reports, Recurring, Investments, and Goals.
-
-The desktop sidebar can be pinned. On a phone or narrow window, use the menu
-button beside the page title. Tables and charts retain aligned labels and
-values; wide data views may scroll horizontally on small screens.
-
-## Budget behavior
-
-The Budget page is monthly and defaults to the current month. Planned income
-should be entered first because expense percentages are based on planned income
-for the selected month.
-
-For each budget category:
-
-- **Planned $** saves a dollar amount.
-- **Planned %** saves a percentage of planned income.
-- Saving either field recalculates the other from planned income.
-- The note below the category shows its percentage of planned income.
-- Rollover can carry eligible unused budget into the next period.
-
-Each group header, including groups such as Variable Expenses, shows:
-
-- Total planned dollars.
-- The group's total planned percentage of planned income.
-- Actual spending or income.
-- Remaining budget.
-
-The group percentage is calculated from the unrounded group total rather than
-adding rounded row percentages. When no planned income exists, expense
-percentage entry is disabled and percentage totals display as unavailable.
-
-Budget edits save in place. Existing rows remain visible while the server
-refreshes, queued edits are applied in order, and a small update status replaces
-the previous full-page flash.
-
-## Charts, timelines, and responsive views
-
-Net Worth, Cash Flow, and Reports expose a timeline selector with:
-
-- This month
-- 3 months
-- 6 months
-- 1 year
-- 3 years
-- 5 years
-- All available history
-
-Depending on the page, category data can be shown as donut or bar charts and
-cash flow as a combination chart. Chart points, bars, segments, and report rows
-can link to the matching Transactions date range or category. Long timelines
-reduce label density and scale bar widths so points remain readable.
-
-Layouts adapt for desktop, tablet, and phone widths. Navigation becomes a
-mobile menu, summary cards stack, transaction fields receive mobile labels, and
-wide charts or structured tables use controlled horizontal scrolling rather
-than clipping values. The app also honors the browser's reduced-motion setting.
-
-## Customize branding
-
-The public edition uses neutral Finance Hub labels. To change the visible
-branding, edit the labels in:
-
-```text
-frontend\src\main.jsx
-```
-
-Look for the `Your financial overview` heading, the sidebar footer label, and
-the `F` profile mark.
-Rebuild the frontend after editing:
+Manual balances do not change when you import transactions. To update a balance
+later, use the account's exact name:
 
 ```cmd
-cd frontend
-npm run build
-cd ..
+python scripts\accounts.py update --name "Everyday" --balance 950.00
 ```
 
-To change the starter financial defaults, review:
+### Import transactions from a CSV
 
-- `data\categories_seed.json` for generalized category names.
-- `scripts\category_rules.py` for generalized merchant-to-category rules.
-- `scripts\bnz_csv_import.py` for generic BNZ import mappings.
-- `scripts\monarch_import.py` for generalized Monarch category mappings.
+A CSV is a spreadsheet saved as plain text. There is no browser button for
+adding individual transactions or uploading files yet.
 
-Changing a category name in only one file can cause a seed or import mapping to
-fall back to `Uncategorized`. Keep names consistent across the files used by
-the intended import path. Keep personal names, employer details, account labels,
-and real merchant history in local application data rather than committed source
-files.
+1. Prepare a spreadsheet with the headings below. Bank exports often use
+   different headings, so copy the data into this format.
+2. Use the exact account name you created. Categories must also match an
+   existing category; leave the category blank to use **Uncategorized**.
+3. Save as **CSV UTF-8 (comma delimited)**, named `transactions.csv`, in
+   `%LOCALAPPDATA%\FinanceHub`. You can paste that folder path into File
+   Explorer's address bar to open it.
+4. Check the file, then run the backup and import commands below.
 
-## Customize seed data
+This example uses invented data. Importing it adds these rows to your tracker.
+Change the dates to the current month if you want to try it in this month's
+charts.
 
-### Categories
-
-Starter categories are in:
-
-```text
-data\categories_seed.json
+```csv
+account_name,posted_date,description,amount,currency,category,transaction_id
+Everyday,2026-09-01,Example income,1000.00,NZD,Other income,example-income-001
+Everyday,2026-09-02,Example grocery shop,-50.00,NZD,Groceries,example-groceries-001
 ```
 
-Each entry has this form:
+Dates use `YYYY-MM-DD`. Money spent is negative; money received is positive.
+Leave out currency symbols and thousands separators.
 
-```json
-{"name": "Groceries", "group_name": "Variable Expenses", "type": "expense"}
-```
-
-Allowed types are `income`, `expense`, and `transfer`.
-
-Important limitations:
-
-- Category names must be unique.
-- Keep `Uncategorized` unless the fallback behavior is also changed in code.
-- Budget categories created in the Budget page can be income or expense, not
-  transfer categories.
-- `python scripts\categories.py seed` only adds missing names. It does not
-  rename or update an existing category with the same name.
-- Rename or deactivate categories instead of deleting database rows after
-  transactions, budgets, splits, or rules refer to them.
-
-Useful commands:
-
-```cmd
-python scripts\categories.py list
-python scripts\categories.py add --name "New category" --group "Variable Expenses" --type expense
-python scripts\categories.py update --name "Old name" --new-name "New name"
-python scripts\categories.py update --name "Category" --group "Fixed Expenses"
-python scripts\categories.py update --name "Category" --type transfer
-python scripts\categories.py deactivate --name "Category"
-```
-
-### Category rules
-
-Starter rules are the `STARTING_RULES` list in:
-
-```text
-scripts\category_rules.py
-```
-
-Each rule is a `(text, category, priority)` tuple:
-
-```python
-("Text to match", "Category name", 100)
-```
-
-The category must already exist. Lower priority numbers run first, so specific
-payment and transfer rules should have lower numbers than broad merchant rules.
-
-```cmd
-python scripts\category_rules.py list
-python scripts\category_rules.py add --text "Merchant text" --category "Groceries" --priority 100
-python scripts\category_rules.py apply
-python scripts\category_rules.py summary
-python scripts\category_rules.py deactivate --id RULE_ID
-```
-
-Running `python scripts\category_rules.py seed` again only adds missing rule
-text. It does not update or reactivate an existing rule.
-
-### Exchange-rate fallback
-
-The offline starter rates are in:
-
-```text
-data\fx_rates_seed.json
-```
-
-Most users should keep them as an emergency fallback and refresh the public
-rate:
-
-```cmd
-python scripts\fx_refresh.py latest
-```
-
-Historical rates can be backfilled for older imported data:
-
-```cmd
-python scripts\fx_refresh.py historical --start 2024-01-01 --end 2024-12-31
-```
-
-### Reset seed data during an empty setup
-
-Only reset the database before real data matters. Stop the app and create a
-backup first if anything might be needed:
+The first five columns are required. `category` and `transaction_id` are
+optional. If you include transaction IDs, give each separate transaction a
+unique ID and keep it the same in future imports.
 
 ```cmd
 python scripts\database_backup.py backup
+python scripts\import_csv_transactions.py "%LOCALAPPDATA%\FinanceHub\transactions.csv"
 ```
 
-Then remove the private database and initialize it again:
+The generic CSV importer saves immediately. It does not have a preview or
+confirmation step. It prints the number of transactions added, matched, or
+skipped. Reload the browser and open **Transactions** to check them.
+
+Importing the same IDs again skips existing posted transactions; it does not
+edit them. Without IDs, rows with identical account, date, amount, currency,
+and description are treated as the same transaction. Use separate IDs for
+repeated purchases that happen to have identical details.
+
+Avoid importing the same history through both a file and a bank connection,
+as those sources can create duplicates. Keep real CSV files outside the project.
+
+For blank categories, open **Rules** and click **Apply matching rules**, then
+review the results. The generic CSV importer does not apply rules automatically.
+
+Separate BNZ and Monarch import scripts are also available. Their requirements
+differ from this format; see [Other import formats](#other-import-formats).
+
+## Using the app
+
+Use the sidebar to move between pages, or the menu beside the page title on a
+small screen. The currency selector changes displayed totals between NZD and
+USD without changing the account's original currency.
+
+### Transactions
+
+1. Open **Transactions** and select **Needs review**.
+2. Use the search, account, category, or date filters to find entries.
+3. Choose a category from the row's category menu. Changes save immediately.
+4. Click **Mark reviewed** when you have checked the entry.
+5. For a purchase covering several categories, click **Split**, enter the
+   amounts as positive numbers, and click **Save split**. They must add up to
+   the original transaction amount, ignoring its minus sign.
+
+**Pending** transactions have not been finalized by the bank. **Posted**
+transactions have. A pending amount can change when it posts.
+
+Use transfer categories for money moved between your own accounts so it does
+not count as everyday income or spending.
+
+### Budget
+
+The Budget page opens on the current month. Use **Previous month**, **Current
+month**, or **Next month** to change it.
+
+1. Click **Show … unbudgeted** beneath a group to reveal unused categories.
+   On a new setup, most categories are hidden until you do this.
+2. Enter expected income in **Planned $** beside an Income category such as
+   **Primary paycheck**. Click outside the field to save it.
+3. Enter spending allowances beside expense categories such as **Groceries**.
+   Use positive amounts.
+4. Once planned income is set, you can use **Planned %** instead of dollars.
+   For example, `10` means 10% of that month's planned income.
+5. Click outside each field and wait for the update to finish. There is no
+   separate Save button for budget rows.
+
+**Actual** shows recorded income or spending, and **Remaining** shows what is
+left against the plan. **Rollover** carries eligible unused budget forward.
+Each group also shows its combined totals.
+
+To add a category, open **Add a budget category**, enter its name, group, and
+type, then click **Add category**.
+
+### Rules
+
+Rules save you from categorizing the same merchant repeatedly.
+
+Open **Rules**, enter text in **Merchant contains**, choose a category, and
+click **Save rule**. Leave priority at `100` for a simple rule; lower numbers
+run first when several rules could match.
+
+Click **Apply matching rules** to apply them to Uncategorized transactions.
+Already categorized entries stay as they are. **Turn off** disables a saved rule.
+
+### Other pages
+
+| Page | Use |
+| --- | --- |
+| **Dashboard** | Account totals, monthly income and spending, budget progress, and recent transactions. |
+| **Accounts** | Balances and net worth: what you own minus what you owe. Click an account name to rename it. |
+| **Cash Flow** | Income and expenses over the selected period. |
+| **Reports** | Spending by category and comparisons across time periods. |
+| **Recurring** | Estimates of future payments and income based on transaction history. |
+| **Goals** | Savings targets. Enter and update the saved amount yourself. |
+| **Investments** | View or enter holdings. Create an account with `--account-type investment` first so it appears in the account selector. |
+| **Sync** | Refresh results and checks for missing or duplicate data. |
+| **Settings** | Display currency and optional email-alert settings. |
+
+Use the timeline selectors to see older history. If a page is empty, check the
+selected dates and filters.
+
+**Refresh all** updates configured bank connections. Providers you have not
+set up are skipped. It does not import CSV files or update manual balances.
+
+## Starting and stopping the app
+
+You only need to install the app once. To open it another day:
+
+1. Open the project folder in File Explorer.
+2. Type `cmd` in the address bar and press Enter.
+3. Run:
 
 ```cmd
-del "%LOCALAPPDATA%\FinanceHub\finance_hub.sqlite"
-python scripts\db_init.py
-python scripts\fx_seed.py seed
-python scripts\categories.py seed
-python scripts\category_rules.py seed
-python scripts\fx_refresh.py latest
+.venv\Scripts\activate.bat
+python app.py
 ```
 
-Deleting the database removes accounts, transactions, budgets, goals, balance
-history, settings, and other local app data.
+4. Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** in your browser.
 
-## Import data without linking a bank
+To stop it, click the Command Prompt window running the app and press
+**Ctrl+C**. Closing the browser does not stop the app. Saved data stays there
+for next time.
 
-Review the supported CSV formats and required confirmation flags before an
-import:
+## Backups
+
+Create a backup before imports, updates, or other changes you might need to
+undo. In a Command Prompt with `.venv` activated:
 
 ```cmd
-python scripts\import_csv_transactions.py --help
+python scripts\database_backup.py backup
+python scripts\database_backup.py list
+```
+
+Backups are saved in `%LOCALAPPDATA%\FinanceHub\backups`. They contain private
+financial information. Keep any extra copies somewhere private and protected;
+a backup on the same computer will not help if the computer is lost.
+
+Stop the app before restoring. If you enabled scheduled app or refresh tasks,
+stop those too. Replace `BACKUP_FILE_NAME` below with the exact filename shown
+by the list command:
+
+```cmd
+python scripts\database_backup.py restore BACKUP_FILE_NAME --confirm RESTORE
+```
+
+This replaces the current database with the saved version and creates a safety
+backup of the current database first. Start the app again afterward.
+
+A database backup includes your accounts, transactions, budgets, and other
+database records. It does not include bank/email credentials, raw imports, or
+scheduled-task configuration. Connections need setting up again if you move
+to another Windows user or computer.
+
+## Other import formats
+
+For a spreadsheet you prepare yourself, use the
+[generic CSV walkthrough](#import-transactions-from-a-csv).
+The specialized importers below expect their own export formats.
+
+Create a backup before importing and keep the files outside the project:
+
+```cmd
+python scripts\database_backup.py backup
 python scripts\bnz_csv_import.py --help
 python scripts\monarch_import.py --help
 ```
 
-Use preview modes where offered. Create a backup before importing and be
-careful when an import overlaps a live-provider date range, because the two
-sources can create duplicate-looking history.
+The BNZ importer expects BNZ transaction CSVs with `dd/mm/yy` dates.
+Filenames must contain `everyday` or `savings`. It also requires both active
+accounts named `Everyday` and `Savings` under provider `akahu-bnz`, even if only
+one file is imported. It is intended for history alongside that bank setup.
+Use its `preview` command first; saving uses `import` with `--confirm IMPORT`.
 
-After an import, inspect:
+The Monarch importer accepts balance exports with `Date,Balance,Account`
+columns and transaction exports with `Date,Merchant,Category,Account,Amount`
+columns. Choose `--balances`, `--transactions`, or both, and set `--currency`
+to `NZD` or `USD`. Run `preview` before `import --confirm IMPORT`.
 
-```cmd
-python scripts\sync_status.py
-python scripts\category_rules.py summary
-```
+Preview output and import errors can contain account names or other private
+details. Review them locally. Avoid overlapping file imports and live bank
+history, and check Transactions and Sync after importing.
 
 ## Optional bank connections
 
@@ -747,7 +567,7 @@ New Zealand time is intended.
 Scheduled Plaid refreshes use the same Production-only configuration as the web
 app. No Plaid environment selection or session setup is required.
 
-All configured providers plus email:
+Both bank providers plus email (Akahu and Plaid must both be configured):
 
 ```cmd
 python scripts\task_scheduler.py install --confirm CREATE --time 20:00 --send-if-empty
@@ -794,33 +614,167 @@ python scripts\automation.py history
 python scripts\task_scheduler.py remove --confirm REMOVE
 ```
 
-## Backups
+## Choose a private data folder
 
-Create a backup before imports, provider changes, migrations, repairs, or
-restores:
+The default data folder is `%LOCALAPPDATA%\FinanceHub`. To use another location,
+set `FINANCE_HUB_DATA_DIR` before initializing the database or starting the app.
+The chosen folder must be outside the project and outside OneDrive.
+
+Use the same setting for every command and scheduled task. Changing it points
+the app at another folder; it does not move existing data. Back up the database
+before moving it, and keep credentials and other private files protected.
+
+## Customize branding
+
+The public edition uses neutral Finance Hub labels. To change the visible
+branding, edit the labels in:
+
+```text
+frontend\src\main.jsx
+```
+
+Look for the `Your financial overview` heading, the sidebar footer label, and
+the `F` profile mark.
+Rebuild the frontend after editing:
+
+```cmd
+cd frontend
+npm run build
+cd ..
+```
+
+To change the starter financial defaults, review:
+
+- `data\categories_seed.json` for generalized category names.
+- `scripts\category_rules.py` for generalized merchant-to-category rules.
+- `scripts\bnz_csv_import.py` for generic BNZ import mappings.
+- `scripts\monarch_import.py` for generalized Monarch category mappings.
+
+Changing a category name in only one file can cause a seed or import mapping to
+fall back to `Uncategorized`. Keep names consistent across the files used by
+the intended import path. Keep personal names, employer details, account labels,
+and real merchant history in local application data rather than committed source
+files.
+
+## Customize seed data
+
+### Categories
+
+Starter categories are in:
+
+```text
+data\categories_seed.json
+```
+
+Each entry has this form:
+
+```json
+{"name": "Groceries", "group_name": "Variable Expenses", "type": "expense"}
+```
+
+Allowed types are `income`, `expense`, and `transfer`.
+
+Important limitations:
+
+- Category names must be unique.
+- Keep `Uncategorized` unless the fallback behavior is also changed in code.
+- Budget categories created in the Budget page can be income or expense, not
+  transfer categories.
+- `python scripts\categories.py seed` only adds missing names. It does not
+  rename or update an existing category with the same name.
+- Rename or deactivate categories instead of deleting database rows after
+  transactions, budgets, splits, or rules refer to them.
+
+Useful commands:
+
+```cmd
+python scripts\categories.py list
+python scripts\categories.py add --name "New category" --group "Variable Expenses" --type expense
+python scripts\categories.py update --name "Old name" --new-name "New name"
+python scripts\categories.py update --name "Category" --group "Fixed Expenses"
+python scripts\categories.py update --name "Category" --type transfer
+python scripts\categories.py deactivate --name "Category"
+```
+
+### Category rules
+
+Starter rules are the `STARTING_RULES` list in:
+
+```text
+scripts\category_rules.py
+```
+
+Each rule is a `(text, category, priority)` tuple:
+
+```python
+("Text to match", "Category name", 100)
+```
+
+The category must already exist. Lower priority numbers run first, so specific
+payment and transfer rules should have lower numbers than broad merchant rules.
+
+```cmd
+python scripts\category_rules.py list
+python scripts\category_rules.py add --text "Merchant text" --category "Groceries" --priority 100
+python scripts\category_rules.py apply
+python scripts\category_rules.py summary
+python scripts\category_rules.py deactivate --id RULE_ID
+```
+
+Running `python scripts\category_rules.py seed` again only adds missing rule
+text. It does not update or reactivate an existing rule.
+
+### Exchange-rate fallback
+
+The offline starter rates are in:
+
+```text
+data\fx_rates_seed.json
+```
+
+Most users should keep them as an emergency fallback and refresh the public
+rate:
+
+```cmd
+python scripts\fx_refresh.py latest
+```
+
+Historical rates can be backfilled for older imported data:
+
+```cmd
+python scripts\fx_refresh.py historical --start 2024-01-01 --end 2024-12-31
+```
+
+### Reset seed data during an empty setup
+
+Only reset the database before real data matters. Stop the app and create a
+backup first if anything might be needed:
 
 ```cmd
 python scripts\database_backup.py backup
-python scripts\database_backup.py list
 ```
 
-Stop the web app before restoring:
+The commands below use the default data folder. If you set
+`FINANCE_HUB_DATA_DIR`, use the database in that folder instead.
+Remove the private database and initialize it again:
 
 ```cmd
-python scripts\database_backup.py restore BACKUP_FILE_NAME --confirm RESTORE
+del "%LOCALAPPDATA%\FinanceHub\finance_hub.sqlite"
+python scripts\db_init.py
+python scripts\fx_seed.py seed
+python scripts\categories.py seed
+python scripts\category_rules.py seed
+python scripts\fx_refresh.py latest
 ```
 
-Old backups can be removed only with the explicit confirmation phrase:
-
-```cmd
-python scripts\database_backup.py cleanup --keep 10 --confirm DELETE_OLD_BACKUPS
-```
+Deleting the database removes accounts, transactions, budgets, goals, balance
+history, settings, and other local app data.
 
 ## Updating or developing the app
 
-Before pulling or changing database code, create a backup. After source updates,
-reactivate the environment, install any current dependencies, migrate the
-database, and rebuild:
+Stop the app and any scheduled refreshes before updating. Create a backup, then
+download the source updates, install dependencies, migrate the database, and
+rebuild:
 
 ```cmd
 .venv\Scripts\activate.bat
@@ -879,15 +833,43 @@ required by daily automation is available.
 
 ## Troubleshooting
 
-### `No module named 'tzdata'` or `ZoneInfoNotFoundError`
+### A command cannot find the app or its files
 
-Activate the virtual environment and reinstall the repository requirements:
+Open the folder containing `app.py` in File Explorer, type `cmd` in its address
+bar, and press Enter. Run `.venv\Scripts\activate.bat` before Python commands.
+
+This guide uses Command Prompt. If PowerShell blocks an activation script,
+switch to Command Prompt and use the commands shown here.
+
+### The browser cannot connect
+
+Check that `python app.py` is still running and use exactly
+`http://127.0.0.1:8000`. Look at the command window for an error.
+
+If port 8000 is already in use, check for another running copy of Finance Hub.
+Use that copy or stop it with Ctrl+C before starting another.
+
+### The frontend is missing or the browser shows old pages
+
+Repeat [step 5](#5-build-the-browser-pages), then reload the browser.
+Restart `python app.py` too if you updated the Python code.
+
+### A timezone or tzdata error appears
+
+Activate `.venv` and reinstall the requirements:
 
 ```cmd
-.venv\Scripts\activate.bat
 python -m pip install -r requirements.txt
 python -c "from zoneinfo import ZoneInfo; print(ZoneInfo('Pacific/Auckland'))"
 ```
+
+The last command should print `Pacific/Auckland`.
+
+### An import fails or the numbers look wrong
+
+Check the CSV headings, comma delimiters, dates, and account/category names.
+In Transactions, check the selected dates and filters and the import's
+added/skipped counts. Manual account balances need updating separately.
 
 ### Node or Vite reports an unsupported engine
 
@@ -907,30 +889,6 @@ npm ci
 npm run build
 cd ..
 ```
-
-### The app says the frontend has not been built or the browser shows old UI
-
-```cmd
-cd frontend
-npm ci
-npm run build
-cd ..
-python app.py
-```
-
-Reload the browser after the build. Restart `python app.py` as well when Python
-backend code changed.
-
-### Port 8000 is already in use
-
-```cmd
-netstat -ano | findstr :8000
-taskkill /PID PID_FROM_NETSTAT /F
-python app.py
-```
-
-Only end the process after confirming the PID belongs to the old Finance Hub
-server.
 
 ### Database missing, schema old, or final check fails
 
@@ -990,14 +948,44 @@ Use the single-provider examples in
 [Install a Windows scheduled task](#install-a-windows-scheduled-task) when only
 Akahu or Plaid is configured.
 
+When asking for help, include the step and error message with private details
+removed. Do not attach bank exports, databases, passwords, or tokens.
+Report security issues through [SECURITY.md](SECURITY.md).
+
+## Privacy
+
+Private files are stored outside the project, by default in:
+
+```text
+%LOCALAPPDATA%\FinanceHub
+```
+
+Paste that path into File Explorer to find the database, backups, exports, and
+any local connection settings or logs. Keep those files outside Git and
+OneDrive.
+
+Bank tokens and email passwords use Windows user-profile encryption. The
+database, exports, and backups are not encrypted by the app, so protect access
+to your Windows account and any copies of those files.
+
+The web app listens only on `127.0.0.1` and has no separate app login. It
+contacts a public service for exchange rates at startup. Optional bank
+connections communicate with Akahu or Plaid; optional email alerts send
+financial summaries through Yahoo to the recipients you configure. Bank
+connections request read-only access.
+
+Do not put real transactions, account details, email addresses, tokens, or
+screenshots containing private information in GitHub issues or commits.
+The ignore rules help keep generated files out of Git. The local security
+check checks configuration, known token values and recognizable credential
+formats in working files, and private or generated filenames in the Git index
+when Git is available. It does not scan staged source contents or Git history,
+and it cannot detect every kind of personal information. Review staged changes
+before committing, even when the checks pass.
+
 ## Security notes
 
 - The web app listens only on `127.0.0.1`.
-- Optional remote access uses private Tailscale Serve, an exact `*.ts.net`
-  origin, and a pinned `Tailscale-User-Login`; all remote GET and POST requests
-  are denied without that identity.
-- Tailscale Funnel, router port forwarding, and direct LAN binding are not
-  supported for this unauthenticated local server.
 - Bank integrations request read-only data access.
 - Secrets are entered with hidden prompts and encrypted for the current Windows
   user.

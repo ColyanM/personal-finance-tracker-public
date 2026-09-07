@@ -45,9 +45,12 @@ def make_transaction_id(row):  #Builds an ID when the CSV does not provide one
 
 def validate_date(value, field_name):  #Makes sure dates are stored in one format
     try:
-        date.fromisoformat(value)
+        parsed_date = date.fromisoformat(value)
     except ValueError as error:
         raise ValueError(f"{field_name} must use YYYY-MM-DD") from error
+
+    if parsed_date.isoformat() != value:
+        raise ValueError(f"{field_name} must use YYYY-MM-DD")
 
 
 def get_account(connection, account_name):  #Finds the active account named in the CSV
@@ -117,6 +120,10 @@ def get_fixed_amounts(connection, amount_minor, currency):  #Works out both NZD 
 
 
 def prepare_row(connection, row):  #Cleans and validates one CSV row before saving it
+    for column in sorted(REQUIRED_COLUMNS):
+        if not (row.get(column) or "").strip():
+            raise ValueError(f"{column} cannot be empty")
+
     account_name = row["account_name"].strip()  #Cleans CSV text before storing it
     posted_date = row["posted_date"].strip()
     description = row["description"].strip()
@@ -128,9 +135,6 @@ def prepare_row(connection, row):  #Cleans and validates one CSV row before savi
     authorized_date = (row.get("authorized_date") or "").strip() or None
     merchant = (row.get("merchant") or "").strip() or None
     notes = (row.get("notes") or "").strip() or None
-
-    if not account_name or not posted_date or not description:
-        raise ValueError("Account name, posted date, and description cannot be empty")
 
     if currency not in SUPPORTED_CURRENCIES:
         raise ValueError("Currency must be NZD or USD")

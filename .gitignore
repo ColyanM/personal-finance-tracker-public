@@ -6,25 +6,50 @@ config.local.*
 *.key
 *.pem
 *.p12
+*.pfx
+*.kdbx
+secrets/
+.npmrc
+.pypirc
+tailscale_access.json
+finance_hub_*.cmd
 
 # Python
 .venv/
 __pycache__/
 *.pyc
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+venv/
 
 # React build output
 frontend/node_modules/
 frontend/dist/
+node_modules/
+.vite/
+coverage/
 
 # VS Code and Windows
 .vscode/
+.idea/
+.agents/
+.codex/
 Thumbs.db
 .DS_Store
 
 # Generated database, imports, exports, and raw bank data
 data/*
 *.csv
+*.tsv
+*.ofx
+*.qfx
+*.qif
+*.xls
+*.xlsx
+*.pdf
 *.db
 *.db-*
 *.sqlite
@@ -32,6 +57,15 @@ data/*
 *.sqlite3
 *.sqlite3-*
 *.log
+*.bak
+*.backup
+*.dump
+backups/
+exports/
+imports/
+raw_data/
+FinanceHub/
+.finance_hub/
 
 # Keep the example exchange rates in Git
 !data/fx_rates_seed.json
